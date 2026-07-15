@@ -6,44 +6,47 @@
     <title>Scanner PWA</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        body { font-family: sans-serif; padding: 15px; background-color: #f4f4f9; margin: 0; }
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; margin: 0; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .logo { height: 60px; }
-        .version { font-size: 18px; color: #333; font-weight: bold; background: #ddd; padding: 10px 15px; border-radius: 8px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .logo { height: 90px; }
+        .version { font-size: 24px; color: #333; font-weight: bold; background: #ddd; padding: 15px 25px; border-radius: 12px; }
 
         .hidden { display: none; }
         
         button { 
             width: 100%; 
-            min-height: 70px; 
-            padding: 15px; 
-            font-size: 24px; 
+            min-height: 100px; 
+            padding: 30px; 
+            font-size: 32px; 
             font-weight: bold; 
-            margin: 10px 0; 
+            margin: 15px 0; 
             border: none; 
-            border-radius: 12px; 
+            border-radius: 20px; 
             cursor: pointer; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            gap: 10px;
+            gap: 15px;
         }
         .btn-save { background: #28a745; color: white; }
         .btn-cancel { background: #6c757d; color: white; }
         .btn-danger { background: #dc3545; color: white; }
         
-        input { width: 100%; padding: 25px; margin: 10px 0; font-size: 24px; box-sizing: border-box; border: 3px solid #ccc; border-radius: 8px; }
+        input { width: 100%; padding: 35px; margin: 15px 0; font-size: 32px; box-sizing: border-box; border: 4px solid #ccc; border-radius: 15px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; font-size: 18px; }
-        th, td { border: 2px solid #ddd; padding: 15px; text-align: left; }
+        h2, h3 { font-size: 36px; }
+        p { font-size: 28px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; background: white; font-size: 26px; }
+        th, td { border: 3px solid #ddd; padding: 25px; text-align: left; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo" class="logo">
-        <div class="version">v2.0.0</div>
+        <div class="version">v1.0.0</div>
     </div>
 
     <h2>Leitor DataMatrix</h2>
@@ -53,7 +56,7 @@
     </div>
 
     <div id="step2" class="hidden">
-        <p>Código: <strong id="displayCode" style="font-size: 28px;"></strong></p>
+        <p>Código: <strong id="displayCode" style="font-size: 36px;"></strong></p>
         <input type="number" id="valueInput" placeholder="🔢 Insira o valor" inputmode="decimal">
         <button class="btn-save" onclick="saveData()">💾 Guardar</button>
         <button class="btn-cancel" onclick="cancelEntry()">❌ Cancelar</button>
@@ -78,7 +81,6 @@
         request.onupgradeneeded = e => { e.target.result.createObjectStore("leituras", { autoIncrement: true }); };
         request.onsuccess = e => { db = e.target.result; renderHistory(); };
 
-        // Função auxiliar para formatar data: "DD/MM/YYYY HH:mm"
         function getFormattedDate() {
             const now = new Date();
             const d = String(now.getDate()).padStart(2, '0');
