@@ -6,7 +6,18 @@
     <title>Scanner PWA</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; margin: 0; }
+        
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            padding: 10px;
+        }
+        .logo { height: 40px; }
+        .version { font-size: 14px; color: #666; font-weight: bold; }
+
         .hidden { display: none; }
         input { width: 100%; padding: 15px; margin: 10px 0; font-size: 16px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
         button { width: 100%; padding: 15px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
@@ -15,6 +26,11 @@
     </style>
 </head>
 <body>
+
+    <div class="header">
+        <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo" class="logo">
+        <div class="version">v1.0.0</div>
+    </div>
 
     <h2>Leitor DataMatrix</h2>
     
