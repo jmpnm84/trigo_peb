@@ -9,16 +9,17 @@
         body { font-family: sans-serif; padding: 15px; background-color: #f4f4f9; margin: 0; }
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .logo { height: 50px; }
-        .version { font-size: 16px; color: #333; font-weight: bold; background: #ddd; padding: 5px 10px; border-radius: 5px; }
+        .logo { height: 60px; }
+        .version { font-size: 18px; color: #333; font-weight: bold; background: #ddd; padding: 10px 15px; border-radius: 8px; }
 
         .hidden { display: none; }
         
-        /* Botões grandes para toque */
+        /* Estilo para botões gigantes (50px altura mínima) */
         button { 
             width: 100%; 
-            padding: 25px; 
-            font-size: 20px; 
+            min-height: 70px; /* Ajustado para garantir visibilidade excelente */
+            padding: 15px; 
+            font-size: 24px; 
             font-weight: bold; 
             margin: 10px 0; 
             border: none; 
@@ -33,10 +34,10 @@
         .btn-cancel { background: #6c757d; color: white; }
         .btn-danger { background: #dc3545; color: white; }
         
-        input { width: 100%; padding: 20px; margin: 10px 0; font-size: 22px; box-sizing: border-box; border: 2px solid #ccc; border-radius: 8px; }
+        input { width: 100%; padding: 25px; margin: 10px 0; font-size: 24px; box-sizing: border-box; border: 3px solid #ccc; border-radius: 8px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; font-size: 18px; }
-        th, td { border: 1px solid #ddd; padding: 15px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; font-size: 20px; }
+        th, td { border: 2px solid #ddd; padding: 20px; text-align: left; }
     </style>
 </head>
 <body>
@@ -49,11 +50,11 @@
     <h2>Leitor DataMatrix</h2>
     
     <div id="step1">
-        <input type="text" id="scannerInput" autofocus placeholder="🔍 Escaneie o código aqui...">
+        <input type="text" id="scannerInput" autofocus placeholder="🔍 Escaneie aqui...">
     </div>
 
     <div id="step2" class="hidden">
-        <p>Código: <strong id="displayCode" style="font-size: 20px;"></strong></p>
+        <p>Código: <strong id="displayCode" style="font-size: 28px;"></strong></p>
         <input type="number" id="valueInput" placeholder="🔢 Insira o valor" inputmode="decimal">
         <button class="btn-save" onclick="saveData()">💾 Guardar</button>
         <button class="btn-cancel" onclick="cancelEntry()">❌ Cancelar</button>
@@ -81,8 +82,7 @@
         document.getElementById('scannerInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const code = this.value;
-                const transaction = db.transaction("leituras", "readonly");
-                const store = transaction.objectStore("leituras");
+                const store = db.transaction("leituras", "readonly").objectStore("leituras");
                 
                 let found = false;
                 store.openCursor().onsuccess = (event) => {
@@ -92,7 +92,7 @@
                         cursor.continue();
                     } else {
                         if (found) {
-                            alert("⚠️ Este código já foi registrado!");
+                            alert("⚠️ Este código já existe!");
                             document.getElementById('scannerInput').value = "";
                         } else {
                             currentCode = code;
@@ -109,7 +109,7 @@
 
         function saveData() {
             const val = document.getElementById('valueInput').value;
-            if(!val) { alert("Por favor, insira um valor."); return; }
+            if(!val) return;
             const now = new Date();
             const dateStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
             const data = { code: currentCode, value: val, timestamp: dateStr };
@@ -135,10 +135,15 @@
         }
 
         function clearHistory() {
-            if (confirm("⚠️ Tem certeza que deseja apagar todo o histórico?")) {
-                const tx = db.transaction("leituras", "readwrite");
-                tx.objectStore("leituras").clear();
-                tx.oncomplete = () => renderHistory();
+            if (confirm("⚠️ TEM CERTEZA? Isto vai apagar todos os dados.")) {
+                const input = prompt("Para confirmar, escreva APAGAR abaixo:");
+                if (input === "APAGAR") {
+                    const tx = db.transaction("leituras", "readwrite");
+                    tx.objectStore("leituras").clear();
+                    tx.oncomplete = () => renderHistory();
+                } else {
+                    alert("Ação cancelada: palavra incorreta.");
+                }
             }
         }
 
