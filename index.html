@@ -31,7 +31,7 @@
 
     <h3>Histórico</h3>
     <table id="historyTable">
-        <thead><tr><th>Código</th><th>Valor</th></tr></thead>
+        <thead><tr><th>Data/Hora</th><th>Código</th><th>Valor</th></tr></thead>
         <tbody></tbody>
     </table>
 
@@ -61,7 +61,13 @@
 
         function saveData() {
             const val = document.getElementById('valueInput').value;
-            const data = { code: currentCode, value: val, timestamp: new Date().toISOString() };
+            
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('pt-PT') + ' ' + 
+                            now.getHours().toString().padStart(2, '0') + ':' + 
+                            now.getMinutes().toString().padStart(2, '0');
+
+            const data = { code: currentCode, value: val, timestamp: dateStr };
 
             const tx = db.transaction("leituras", "readwrite");
             tx.objectStore("leituras").add(data);
@@ -87,7 +93,7 @@
             db.transaction("leituras").objectStore("leituras").openCursor(null, 'prev').onsuccess = e => {
                 const cursor = e.target.result;
                 if (cursor) {
-                    tbody.innerHTML += `<tr><td>${cursor.value.code}</td><td>${cursor.value.value}</td></tr>`;
+                    tbody.innerHTML += `<tr><td>${cursor.value.timestamp}</td><td>${cursor.value.code}</td><td>${cursor.value.value}</td></tr>`;
                     cursor.continue();
                 }
             };
