@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner PWA</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .hidden { display: none; }
+        input { width: 100%; padding: 10px; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <h2>Leitor DataMatrix</h2>
+    
+    <div id="step1">
+        <label>Aguardando leitura (Scan):</label>
+        <input type="text" id="scannerInput" autofocus placeholder="Escaneie o código aqui...">
+    </div>
+
+    <div id="step2" class="hidden">
+        <p>Código: <strong id="displayCode"></strong></p>
+        <input type="number" id="valueInput" placeholder="Insira o valor">
+        <button onclick="saveData()">Guardar</button>
+    </div>
+
+    <h3>Histórico</h3>
+    <table id="historyTable">
+        <thead><tr><th>Código</th><th>Valor</th></tr></thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        let db;
+        let currentCode = "";
+        const request = indexedDB.open("ScannerDB", 1);
+
+        request.onupgradeneeded = e => {
+            db = e.target.result;
+            db.createObjectStore("leituras", { autoIncrement: true });
+        };
+        request.onsuccess = e => { db = e.target.result; renderHistory(); };
+
+        // Captura o input do leitor
+        document.getElementById('scannerInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                currentCode = this.value;
+                document.getElementById('displayCode').innerText = currentCode;
+                document.getElementById('step1').classList.add('hidden');
+                document.getElementById('step2').classList.remove('hidden');
+                document.getElementById('valueInput').focus();
+                this.value = "";
+            }
+        });
+
+        function saveData() {
+            const val = document.getElementById('valueInput').value;
+            const data = { code: currentCode, value: val, timestamp: new Date() };
+
+            const tx = db.transaction("leituras", "readwrite");
+            tx.objectStore("leituras").add(data);
+            
+            // Enviar para Drive via WebHook (Google Apps Script)
+            fetch('URL_DO_SEU_GOOGLE_APPS_SCRIPT', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }).catch(err => console.error("Erro ao enviar para Drive", err));
+
+            document.getElementById('valueInput').value = "";
+            document.getElementById('step1').classList.remove('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('scannerInput').focus();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const tbody = document.querySelector('#historyTable tbody');
+            tbody.innerHTML = "";
+            db.transaction("leituras").objectStore("leituras").openCursor().onsuccess = e => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    tbody.innerHTML += `<tr><td>${cursor.value.code}</td><td>${cursor.value.value}</td></tr>`;
+                    cursor.continue();
+                }
+            };
+        }
+    </script>
+</body>
+</html>
