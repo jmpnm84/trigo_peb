@@ -14,10 +14,9 @@
 
         .hidden { display: none; }
         
-        /* Estilo para botões gigantes (50px altura mínima) */
         button { 
             width: 100%; 
-            min-height: 70px; /* Ajustado para garantir visibilidade excelente */
+            min-height: 70px; 
             padding: 15px; 
             font-size: 24px; 
             font-weight: bold; 
@@ -36,15 +35,15 @@
         
         input { width: 100%; padding: 25px; margin: 10px 0; font-size: 24px; box-sizing: border-box; border: 3px solid #ccc; border-radius: 8px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; font-size: 20px; }
-        th, td { border: 2px solid #ddd; padding: 20px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; font-size: 18px; }
+        th, td { border: 2px solid #ddd; padding: 15px; text-align: left; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo" class="logo">
-        <div class="version">v1.2.0</div>
+        <div class="version">v2.0.0</div>
     </div>
 
     <h2>Leitor DataMatrix</h2>
@@ -62,7 +61,7 @@
 
     <h3>Histórico</h3>
     <table id="historyTable">
-        <thead><tr><th>Hora</th><th>Código</th><th>Valor</th></tr></thead>
+        <thead><tr><th>Data/Hora</th><th>Código</th><th>Valor</th></tr></thead>
         <tbody></tbody>
     </table>
 
@@ -78,6 +77,17 @@
         const request = indexedDB.open("ScannerDB", 1);
         request.onupgradeneeded = e => { e.target.result.createObjectStore("leituras", { autoIncrement: true }); };
         request.onsuccess = e => { db = e.target.result; renderHistory(); };
+
+        // Função auxiliar para formatar data: "DD/MM/YYYY HH:mm"
+        function getFormattedDate() {
+            const now = new Date();
+            const d = String(now.getDate()).padStart(2, '0');
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const y = now.getFullYear();
+            const h = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            return `${d}/${m}/${y} ${h}:${min}`;
+        }
 
         document.getElementById('scannerInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -110,9 +120,9 @@
         function saveData() {
             const val = document.getElementById('valueInput').value;
             if(!val) return;
-            const now = new Date();
-            const dateStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-            const data = { code: currentCode, value: val, timestamp: dateStr };
+            
+            const timestamp = getFormattedDate();
+            const data = { code: currentCode, value: val, timestamp: timestamp };
 
             const tx = db.transaction("leituras", "readwrite");
             tx.objectStore("leituras").add(data);
@@ -141,8 +151,6 @@
                     const tx = db.transaction("leituras", "readwrite");
                     tx.objectStore("leituras").clear();
                     tx.oncomplete = () => renderHistory();
-                } else {
-                    alert("Ação cancelada: palavra incorreta.");
                 }
             }
         }
