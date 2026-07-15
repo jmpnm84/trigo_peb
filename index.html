@@ -21,6 +21,7 @@
         .hidden { display: none; }
         input { width: 100%; padding: 15px; margin: 10px 0; font-size: 16px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
         button { width: 100%; padding: 15px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button.danger { background: #dc3545; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
         th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     </style>
@@ -29,7 +30,7 @@
 
     <div class="header">
         <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo" class="logo">
-        <div class="version">v1.0.0</div>
+        <div class="version">v1..0</div>
     </div>
 
     <h2>Leitor DataMatrix</h2>
@@ -43,6 +44,7 @@
         <p>Código: <strong id="displayCode"></strong></p>
         <input type="number" id="valueInput" placeholder="Insira o valor" inputmode="decimal">
         <button onclick="saveData()">Guardar</button>
+        <button style="background: #6c757d; margin-top: 10px;" onclick="cancelEntry()">Cancelar</button>
     </div>
 
     <h3>Histórico</h3>
@@ -50,6 +52,8 @@
         <thead><tr><th>Data/Hora</th><th>Código</th><th>Valor</th></tr></thead>
         <tbody></tbody>
     </table>
+
+    <button class="danger" onclick="clearHistory()">Limpar Histórico</button>
 
     <script>
         if ('serviceWorker' in navigator) {
@@ -66,18 +70,35 @@
 
         document.getElementById('scannerInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                currentCode = this.value;
-                document.getElementById('displayCode').innerText = currentCode;
-                document.getElementById('step1').classList.add('hidden');
-                document.getElementById('step2').classList.remove('hidden');
-                document.getElementById('valueInput').focus();
-                this.value = "";
+                const code = this.value;
+                const transaction = db.transaction("leituras", "readonly");
+                const store = transaction.objectStore("leituras");
+                
+                let found = false;
+                store.openCursor().onsuccess = (event) => {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        if (cursor.value.code === code) found = true;
+                        cursor.continue();
+                    } else {
+                        if (found) {
+                            alert("Atenção: Este código já foi registrado anteriormente!");
+                            document.getElementById('scannerInput').value = "";
+                        } else {
+                            currentCode = code;
+                            document.getElementById('displayCode').innerText = currentCode;
+                            document.getElementById('step1').classList.add('hidden');
+                            document.getElementById('step2').classList.remove('hidden');
+                            document.getElementById('valueInput').focus();
+                            document.getElementById('scannerInput').value = "";
+                        }
+                    }
+                };
             }
         });
 
         function saveData() {
             const val = document.getElementById('valueInput').value;
-            
             const now = new Date();
             const dateStr = now.toLocaleDateString('pt-PT') + ' ' + 
                             now.getHours().toString().padStart(2, '0') + ':' + 
@@ -96,11 +117,25 @@
             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: formData, mode: 'no-cors' })
                 .catch(err => console.error("Erro no envio:", err));
 
+            cancelEntry();
+            renderHistory();
+        }
+
+        function cancelEntry() {
             document.getElementById('valueInput').value = "";
             document.getElementById('step1').classList.remove('hidden');
             document.getElementById('step2').classList.add('hidden');
             document.getElementById('scannerInput').focus();
-            renderHistory();
+        }
+
+        function clearHistory() {
+            if (confirm("Tem certeza que deseja apagar todo o histórico?")) {
+                if (confirm("Esta ação é irreversível. Confirmar exclusão?")) {
+                    const tx = db.transaction("leituras", "readwrite");
+                    tx.objectStore("leituras").clear();
+                    tx.oncomplete = () => renderHistory();
+                }
+            }
         }
 
         function renderHistory() {
