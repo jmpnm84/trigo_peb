@@ -35,7 +35,7 @@
 <body>
     <div class="box header-box">
         <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo">
-        <span class="versao">v2.4.0</span>
+        <span class="versao">v2.5.0</span>
     </div>
     <div class="tab-bar">
         <button class="tab-btn active" onclick="trocarTab('picagem')">PICAGEM</button>
@@ -77,7 +77,7 @@
         <button class="btn-danger" onclick="limparHistorico()">LIMPAR HISTÓRICO</button>
     </div>
     <script>
-        let db, total = 0, atual = 0, dadosPicagem = [], scanTemp = "", referenciaTemp = "";
+        let db, total = 0, atual = 0, dadosPicagem = [], scanTemp = "", referenciaTemp = "", scansRealizados = new Set();
         const inputScan = document.getElementById('inputScan');
         const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbwO88Rq6RvOuJaS_LLB-LfzXCfyklWmJo0uuJo-o7Od37SHVKU1UJxf0XCpdc9Bl3mm/exec";
         
@@ -100,6 +100,11 @@
             if (e.key === 'Enter') {
                 const val = inputScan.value.trim();
                 if (!val) return;
+                if (scansRealizados.has(val)) {
+                    alert("Atenção: Data Matrix já picado neste lote!");
+                    inputScan.value = '';
+                    return;
+                }
                 scanTemp = val;
                 document.getElementById('areaPicagem').style.display = 'none';
                 document.getElementById('popupEstanquidade').style.display = 'block';
@@ -109,6 +114,7 @@
 
         document.getElementById('inputEstanquidade').addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && e.target.value) {
+                scansRealizados.add(scanTemp);
                 dadosPicagem.push({ dataMatrix: scanTemp, estanquidade: e.target.value });
                 atual++;
                 document.getElementById('contador').innerText = atual;
@@ -167,7 +173,14 @@
             };
         }
         function limparIdentificacao() { document.getElementById('nomeColaborador').value = ''; document.getElementById('qtdTotal').value = ''; }
-        function limparHistorico() { if(confirm("Limpar tudo?")) { db.transaction(["lotes"], "readwrite").objectStore("lotes").clear().onsuccess = () => location.reload(); } }
+        function limparHistorico() { 
+            const pin = prompt("Insira o PIN para confirmar a limpeza:");
+            if(pin === "1563") {
+                db.transaction(["lotes"], "readwrite").objectStore("lotes").clear().onsuccess = () => location.reload();
+            } else if(pin !== null) {
+                alert("PIN incorreto!");
+            }
+        }
     </script>
 </body>
 </html>
