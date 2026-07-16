@@ -20,7 +20,6 @@
         .setup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; margin-bottom: 10px; }
         h3 { margin: 0; font-size: 1.4em; }
         
-        /* Botão em formato de card pequeno */
         .btn-limpar { 
             background: #f8f9fa; color: #e74c3c; border: 1px solid #e74c3c; 
             padding: 4px 10px; border-radius: 8px; cursor: pointer; 
@@ -168,10 +167,24 @@
         function finalizar() {
             const etiqueta = document.getElementById('inputEtiqueta').value;
             const nome = document.getElementById('nomeColaborador').value;
-            const novoLote = { referencia: referenciaTemp, etiqueta, scans: scansAtuais, data: new Date().toLocaleString(), colab: nome };
-            db.transaction(["lotes"], "readwrite").objectStore("lotes").add(novoLote).onsuccess = () => {
+            const agora = new Date();
+            const dataFormatada = ("0" + agora.getDate()).slice(-2) + "/" + ("0" + (agora.getMonth() + 1)).slice(-2) + "/" + agora.getFullYear() + " " + ("0" + agora.getHours()).slice(-2) + ":" + ("0" + agora.getMinutes()).slice(-2);
+            
+            const dados = { referencia: referenciaTemp, etiqueta: etiqueta, scans: scansAtuais, data: dataFormatada, colab: nome, total: total };
+
+            fetch('https://script.google.com/macros/s/AKfycbwO88Rq6RvOuJaS_LLB-LfzXCfyklWmJo0uuJo-o7Od37SHVKU1UJxf0XCpdc9Bl3mm/exec', {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            }).then(() => {
+                db.transaction(["lotes"], "readwrite").objectStore("lotes").add(dados).onsuccess = () => {
+                    location.reload();
+                };
+            }).catch(() => {
+                alert("Erro ao enviar para o Drive, mas o dado foi salvo no histórico local.");
                 location.reload();
-            };
+            });
         }
 
         function limparHistorico() {
