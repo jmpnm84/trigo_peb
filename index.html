@@ -56,7 +56,7 @@
 
     <div class="box header-box">
         <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo">
-        <span class="versao">v2.1.0</span>
+        <span class="versao">v2.2.0</span>
     </div>
 
     <div class="tab-bar">
@@ -84,6 +84,11 @@
             <input type="text" id="inputScan" autocomplete="off">
         </div>
 
+        <div id="popupEstanquidade" class="box" style="display:none;">
+            <h3>Valor Estanquidade</h3>
+            <input type="text" id="inputEstanquidade" autocomplete="off">
+        </div>
+
         <div id="popupRef" class="box" style="display:none;">
             <h3>Referência</h3>
             <input type="text" id="inputReferencia" autocomplete="off">
@@ -101,7 +106,6 @@
     </div>
 
     <script>
-        // Ajuste responsivo de escala
         function ajustarEscala() {
             const largura = window.innerWidth;
             document.documentElement.style.fontSize = largura < 600 ? "8px" : "10px";
@@ -109,8 +113,7 @@
         window.addEventListener('resize', ajustarEscala);
         ajustarEscala();
 
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
-        let db, total = 0, atual = 0, scansAtuais = [], referenciaTemp = "";
+        let db, total = 0, atual = 0, dadosPicagem = [], scanTemp = "", referenciaTemp = "";
         const inputScan = document.getElementById('inputScan');
 
         const request = indexedDB.open("SistemaPicagemDB", 1);
@@ -131,25 +134,62 @@
         inputScan.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 const val = inputScan.value.trim();
-                if (!val || scansAtuais.includes(val)) return;
-                scansAtuais.push(val); atual++;
+                if (!val) return;
+                scanTemp = val;
+                document.getElementById('areaPicagem').style.display = 'none';
+                document.getElementById('popupEstanquidade').style.display = 'block';
+                document.getElementById('inputEstanquidade').focus();
+            }
+        });
+
+        document.getElementById('inputEstanquidade').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.target.value) {
+                dadosPicagem.push({ dataMatrix: scanTemp, estanquidade: e.target.value });
+                atual++;
                 document.getElementById('contador').innerText = atual;
-                inputScan.value = '';
+                e.target.value = '';
+                document.getElementById('popupEstanquidade').style.display = 'none';
+                
                 if (atual >= total) {
-                    document.getElementById('areaPicagem').style.display = 'none';
                     document.getElementById('popupRef').style.display = 'block';
+                    document.getElementById('inputReferencia').focus();
+                } else {
+                    document.getElementById('areaPicagem').style.display = 'block';
+                    inputScan.value = '';
+                    inputScan.focus();
                 }
             }
         });
 
         document.getElementById('inputReferencia').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && e.target.value) { referenciaTemp = e.target.value; document.getElementById('popupRef').style.display = 'none'; document.getElementById('popupEtiqueta').style.display = 'block'; }
+            if (e.key === 'Enter' && e.target.value) { 
+                referenciaTemp = e.target.value; 
+                document.getElementById('popupRef').style.display = 'none'; 
+                document.getElementById('popupEtiqueta').style.display = 'block'; 
+                document.getElementById('inputEtiqueta').focus();
+            }
         });
 
         document.getElementById('inputEtiqueta').addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && e.target.value) {
-                const dados = { referencia: referenciaTemp, etiqueta: e.target.value, scans: scansAtuais, data: new Date().toLocaleString(), colab: document.getElementById('nomeColaborador').value };
-                db.transaction(["lotes"], "readwrite").objectStore("lotes").add(dados).onsuccess = () => location.reload();
+                const pacote = { 
+                    referencia: referenciaTemp, 
+                    etiqueta: e.target.value, 
+                    itens: dadosPicagem, 
+                    data: new Date().toLocaleString(), 
+                    colab: document.getElementById('nomeColaborador').value,
+                    total: total 
+                };
+                
+                db.transaction(["lotes"], "readwrite").objectStore("lotes").add(pacote).onsuccess = () => {
+                    // Enviar para Apps Script
+                    fetch("URL_DO_SEU_WEB_APP_AQUI", {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(pacote)
+                    }).then(() => location.reload());
+                };
             }
         });
 
@@ -164,7 +204,7 @@
                 const cursor = e.target.result;
                 if (cursor) {
                     const div = document.createElement('div'); div.className = 'acordeao';
-                    div.innerHTML = `<div class="cabecalho" onclick="this.nextElementSibling.style.display=(this.nextElementSibling.style.display=='block'?'none':'block')">ETQ: ${cursor.value.etiqueta} <span class="badge">${cursor.value.scans.length}</span></div><div class="conteudo">Data: ${cursor.value.data}</div>`;
+                    div.innerHTML = `<div class="cabecalho" onclick="this.nextElementSibling.style.display=(this.nextElementSibling.style.display=='block'?'none':'block')">ETQ: ${cursor.value.etiqueta} <span class="badge">${cursor.value.itens.length}</span></div><div class="conteudo">Data: ${cursor.value.data}</div>`;
                     container.appendChild(div); cursor.continue();
                 }
             };
