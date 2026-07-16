@@ -21,20 +21,21 @@
         input { width: 100%; padding: 2rem; margin: 1rem 0 2rem 0; border: 0.4rem solid #ddd; border-radius: 2rem; font-size: 2.2rem; text-align: center; box-sizing: border-box; }
         button { width: 100%; padding: 2rem; cursor: pointer; background: var(--secondary); color: white; border: none; border-radius: 2rem; font-size: 2rem; font-weight: bold; text-transform: uppercase; }
         .btn-limpar { background: #f8f9fa; color: #e74c3c; border: 0.3rem solid #e74c3c; padding: 1rem 2rem; font-size: 1.4rem; width: auto; }
-        .btn-danger { background: var(--error); margin-top: 2rem; }
+        .btn-danger { background: #e74c3c; margin-top: 2rem; }
         .tab-content { width: 100%; max-width: 80rem; }
         .hidden { display: none; }
         .acordeao { background: var(--white); border-radius: 2rem; margin-bottom: 2rem; box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.05); overflow: hidden; }
         .cabecalho { padding: 2.5rem; cursor: pointer; font-size: 1.8rem; font-weight: bold; display: flex; justify-content: space-between; border-left: 1rem solid var(--secondary); }
-        .conteudo { display: none; padding: 2rem; font-size: 1.6rem; border-top: 0.2rem solid #eee; }
+        .conteudo { display: none; padding: 2rem; font-size: 1.4rem; border-top: 0.2rem solid #eee; }
         .badge { background: var(--secondary); color: white; padding: 0.5rem 1.5rem; border-radius: 2rem; }
         #contador-display { font-size: 6rem; text-align: center; margin: 2rem 0; color: var(--secondary); font-weight: bold; }
+        .item-row { border-bottom: 1px solid #eee; padding: 0.5rem 0; }
     </style>
 </head>
 <body>
     <div class="box header-box">
         <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo">
-        <span class="versao">v2.3.0</span>
+        <span class="versao">v2.4.0</span>
     </div>
     <div class="tab-bar">
         <button class="tab-btn active" onclick="trocarTab('picagem')">PICAGEM</button>
@@ -135,17 +136,11 @@
 
         document.getElementById('inputEtiqueta').addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && e.target.value) {
-                const pacote = { referencia: referenciaTemp, etiqueta: e.target.value, itens: dadosPicagem, data: new Date().toLocaleString(), colab: document.getElementById('nomeColaborador').value, total: total };
+                const now = new Date();
+                const dataFormatada = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                const pacote = { referencia: referenciaTemp, etiqueta: e.target.value, itens: dadosPicagem, data: dataFormatada, colab: document.getElementById('nomeColaborador').value, total: total };
                 db.transaction(["lotes"], "readwrite").objectStore("lotes").add(pacote).onsuccess = () => {
-                    fetch(URL_SCRIPT, {
-                        method: "POST",
-                        mode: "no-cors",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(pacote)
-                    }).then(() => {
-                        alert("Lote enviado com sucesso!");
-                        location.reload();
-                    });
+                    fetch(URL_SCRIPT, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pacote) }).then(() => { alert("Lote enviado!"); location.reload(); });
                 };
             }
         });
@@ -159,8 +154,14 @@
             db.transaction("lotes").objectStore("lotes").openCursor(null, 'prev').onsuccess = (e) => {
                 const cursor = e.target.result;
                 if (cursor) {
+                    const v = cursor.value;
+                    let htmlItens = v.itens.map(i => `<div class="item-row"><b>DM:</b> ${i.dataMatrix} | <b>Est:</b> ${i.estanquidade}</div>`).join('');
                     const div = document.createElement('div'); div.className = 'acordeao';
-                    div.innerHTML = `<div class="cabecalho" onclick="this.nextElementSibling.style.display=(this.nextElementSibling.style.display=='block'?'none':'block')">ETQ: ${cursor.value.etiqueta} <span class="badge">${cursor.value.itens.length}</span></div><div class="conteudo">Data: ${cursor.value.data}</div>`;
+                    div.innerHTML = `<div class="cabecalho" onclick="this.nextElementSibling.style.display=(this.nextElementSibling.style.display=='block'?'none':'block')">ETQ: ${v.etiqueta} <span class="badge">${v.total} Un.</span></div>
+                    <div class="conteudo">
+                        <p><b>Data:</b> ${v.data} | <b>Colab:</b> ${v.colab} | <b>Ref:</b> ${v.referencia}</p>
+                        ${htmlItens}
+                    </div>`;
                     container.appendChild(div); cursor.continue();
                 }
             };
