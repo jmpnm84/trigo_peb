@@ -1,8 +1,3 @@
-Para garantir que tudo fique bem maior e perfeitamente centrado em qualquer telemóvel, ajustei os valores de `padding`, `font-size` e utilizei propriedades de `flexbox` para garantir o alinhamento vertical e horizontal absoluto.
-
-Aqui está o código completo do **index.html** com os estilos otimizados:
-
-```html
 <!DOCTYPE html>
 <html lang="pt-pt">
 <head>
@@ -22,61 +17,62 @@ Aqui está o código completo do **index.html** com os estilos otimizados:
             align-items: center; 
             justify-content: flex-start;
             color: var(--primary); 
-            font-size: 22px;
-            padding: 20px;
+            font-size: 26px;
+            padding: 30px;
             box-sizing: border-box;
         }
         
         .box { 
             background: var(--white); 
-            border-radius: 30px; 
-            padding: 40px; 
+            border-radius: 40px; 
+            padding: 50px; 
             width: 100%; 
-            max-width: 600px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
-            margin-bottom: 30px; 
+            max-width: 800px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15); 
+            margin-bottom: 40px; 
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
 
-        .header-box { display: flex; justify-content: space-between; align-items: center; }
-        .header-box img { height: 70px; }
+        .header-box { flex-direction: row; justify-content: space-between; }
+        .header-box img { height: 90px; }
         .versao { font-size: 1.2em; font-weight: bold; color: #7f8c8d; }
 
-        .tab-bar { display: flex; width: 100%; max-width: 600px; margin-bottom: 30px; background: #ddd; border-radius: 20px; padding: 8px; }
-        .tab-btn { flex: 1; padding: 25px; border: none; border-radius: 16px; cursor: pointer; font-weight: bold; font-size: 1.3em; background: transparent; }
-        .tab-btn.active { background: var(--white); color: var(--secondary); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        .tab-bar { display: flex; width: 100%; max-width: 800px; margin-bottom: 40px; background: #ddd; border-radius: 30px; padding: 10px; }
+        .tab-btn { flex: 1; padding: 30px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; font-size: 1.4em; background: transparent; }
+        .tab-btn.active { background: var(--white); color: var(--secondary); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
 
-        .setup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--secondary); padding-bottom: 20px; margin-bottom: 30px; }
-        h3 { margin: 0; font-size: 2em; }
+        .setup-header { width: 100%; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid var(--secondary); padding-bottom: 30px; margin-bottom: 40px; }
+        h3 { margin: 0; font-size: 2.2em; }
         
         .btn-limpar { 
-            background: #f8f9fa; color: #e74c3c; border: 3px solid #e74c3c; 
-            padding: 15px 30px; border-radius: 16px; cursor: pointer; 
-            font-weight: bold; font-size: 1em; text-transform: uppercase;
+            background: #f8f9fa; color: #e74c3c; border: 4px solid #e74c3c; 
+            padding: 20px 40px; border-radius: 20px; cursor: pointer; 
+            font-weight: bold; font-size: 1.1em; text-transform: uppercase;
         }
 
-        input { width: 100%; padding: 30px; margin: 25px 0; border: 4px solid #ddd; border-radius: 20px; box-sizing: border-box; font-size: 1.8em; text-align: center; }
-        button { width: 100%; padding: 30px; cursor: pointer; background: var(--secondary); color: white; border: none; border-radius: 20px; font-size: 1.6em; font-weight: bold; text-transform: uppercase; }
+        input { width: 100%; padding: 40px; margin: 30px 0; border: 5px solid #ddd; border-radius: 25px; box-sizing: border-box; font-size: 2em; text-align: center; }
+        button { width: 100%; padding: 40px; cursor: pointer; background: var(--secondary); color: white; border: none; border-radius: 25px; font-size: 1.8em; font-weight: bold; text-transform: uppercase; }
         
-        .btn-danger { background: var(--error); margin-top: 30px; }
-        .error-msg { color: var(--error); font-weight: bold; font-size: 1.5em; display: none; margin-bottom: 20px; text-align: center; }
+        .btn-danger { background: var(--error); margin-top: 40px; }
+        .error-msg { color: var(--error); font-weight: bold; font-size: 1.8em; display: none; margin-bottom: 30px; text-align: center; }
         
-        .tab-content { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; }
+        .tab-content { width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; }
         .hidden { display: none; }
 
-        .acordeao { width: 100%; background: var(--white); border-radius: 20px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); overflow: hidden; }
-        .cabecalho { padding: 35px; cursor: pointer; font-size: 1.5em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-left: 12px solid var(--secondary); }
-        .conteudo { display: none; padding: 30px; background: #fafafa; border-top: 2px solid #eee; font-size: 1.3em; line-height: 1.8; }
-        .badge { background: var(--secondary); color: white; padding: 10px 25px; border-radius: 40px; font-size: 1em; }
+        .acordeao { width: 100%; background: var(--white); border-radius: 30px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
+        .cabecalho { padding: 45px; cursor: pointer; font-size: 1.8em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-left: 15px solid var(--secondary); }
+        .conteudo { display: none; padding: 40px; background: #fafafa; border-top: 3px solid #eee; font-size: 1.5em; line-height: 2; }
+        .badge { background: var(--secondary); color: white; padding: 12px 30px; border-radius: 50px; font-size: 1em; }
     </style>
 </head>
 <body>
 
     <div class="box header-box">
         <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo">
-        <span class="versao">v2.1.0</span>
+        <span class="versao">v2.0.0</span>
     </div>
 
     <div class="tab-bar">
@@ -98,20 +94,20 @@ Aqui está o código completo do **index.html** com os estilos otimizados:
         <div id="areaPicagem" class="box" style="display:none;">
             <h3>Progresso</h3>
             <div id="erroDuplicado" class="error-msg">Código já picado!</div>
-            <div style="font-size: 6em; text-align: center; margin: 40px 0; color: var(--secondary); font-weight: bold;">
+            <div style="font-size: 8em; text-align: center; margin: 50px 0; color: var(--secondary); font-weight: bold;">
                 <span id="contador">0</span> / <span id="total">0</span>
             </div>
-            <input type="text" id="inputScan" placeholder="Escanear Data Matrix..." autocomplete="off">
+            <input type="text" id="inputScan" placeholder="Picar Data Matrix..." autocomplete="off">
         </div>
 
         <div id="popupRef" class="box" style="display:none;">
             <h3>Referência</h3>
-            <input type="text" id="inputReferencia" placeholder="Escanear Referência" autocomplete="off">
+            <input type="text" id="inputReferencia" placeholder="Picar Referência" autocomplete="off">
         </div>
 
         <div id="popupEtiqueta" class="box" style="display:none;">
             <h3>Finalizar Lote</h3>
-            <input type="text" id="inputEtiqueta" placeholder="Escanear Etiqueta" autocomplete="off">
+            <input type="text" id="inputEtiqueta" placeholder="Picar Etiqueta" autocomplete="off">
         </div>
     </div>
 
@@ -193,5 +189,3 @@ Aqui está o código completo do **index.html** com os estilos otimizados:
     </script>
 </body>
 </html>
-
-```
