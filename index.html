@@ -1,172 +1,210 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scanner PWA</title>
-    <link rel="manifest" href="manifest.json">
+    <title>Sistema de Picagem Industrial</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: sans-serif; padding: 15px; background-color: #f4f4f9; margin: 0; width: 100%; overflow-x: hidden; }
+        :root { --primary: #2c3e50; --secondary: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; --white: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 15px; display: flex; flex-direction: column; align-items: center; color: var(--primary); margin: 0; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; width: 100%; }
-        .logo { height: 70px; max-width: 60%; }
-        .version { font-size: 20px; color: #333; font-weight: bold; background: #ddd; padding: 10px 15px; border-radius: 12px; }
+        .box { background: var(--white); border-radius: 16px; padding: 25px; width: 100%; max-width: 450px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 20px; box-sizing: border-box; }
+        .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .header-box img { height: 35px; }
+        .versao { font-size: 0.9em; font-weight: bold; color: #7f8c8d; }
 
-        .hidden { display: none; }
+        .tab-bar { display: flex; width: 100%; max-width: 450px; margin-bottom: 20px; background: #ddd; border-radius: 10px; padding: 4px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: transparent; }
+        .tab-btn.active { background: var(--white); color: var(--secondary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .setup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; margin-bottom: 10px; }
+        h3 { margin: 0; font-size: 1.4em; }
         
-        button { 
-            width: 100%; 
-            min-height: 100px; 
-            padding: 20px; 
-            font-size: 28px; 
-            font-weight: bold; 
-            margin: 15px 0; 
-            border: none; 
-            border-radius: 20px; 
-            cursor: pointer; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 15px;
-            white-space: normal;
+        /* Botão em formato de card pequeno */
+        .btn-limpar { 
+            background: #f8f9fa; color: #e74c3c; border: 1px solid #e74c3c; 
+            padding: 4px 10px; border-radius: 8px; cursor: pointer; 
+            font-weight: bold; font-size: 0.75em; text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .btn-save { background: #28a745; color: white; }
-        .btn-cancel { background: #6c757d; color: white; }
-        .btn-danger { background: #dc3545; color: white; }
-        
-        input { width: 100%; padding: 25px; margin: 15px 0; font-size: 28px; border: 4px solid #ccc; border-radius: 15px; }
-        
-        h2, h3 { font-size: 32px; word-wrap: break-word; }
-        p { font-size: 26px; word-wrap: break-word; }
+        .btn-limpar:hover { background: #e74c3c; color: white; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; background: white; font-size: 20px; table-layout: fixed; }
-        th, td { border: 2px solid #ddd; padding: 15px; text-align: left; word-wrap: break-word; }
+        input { width: 100%; padding: 18px; margin: 15px 0; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1.2em; }
+        button { width: 100%; padding: 20px; cursor: pointer; background: var(--secondary); color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: bold; text-transform: uppercase; }
+        .btn-danger { background: var(--error); margin-top: 10px; }
+        .error-msg { color: var(--error); font-weight: bold; display: none; margin-bottom: 10px; }
+        
+        .tab-content { width: 100%; max-width: 450px; }
+        .hidden { display: none; }
+
+        .acordeao { background: var(--white); border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; }
+        .cabecalho { padding: 20px; cursor: pointer; font-size: 1.1em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid var(--secondary); }
+        .conteudo { display: none; padding: 20px; background: #fafafa; border-top: 1px solid #eee; font-size: 1em; }
+        .badge { background: var(--secondary); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo" class="logo">
-        <div class="version">v2.0.0</div>
+    <div class="box header-box">
+        <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo">
+        <span class="versao">v1.0.0</span>
     </div>
 
-    <h2>Leitor DataMatrix</h2>
-    
-    <div id="step1">
-        <input type="text" id="scannerInput" autofocus placeholder="🔍 Escaneie aqui...">
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="trocarTab('picagem')">PICAGEM</button>
+        <button class="tab-btn" onclick="trocarTab('historico')">HISTÓRICO</button>
     </div>
 
-    <div id="step2" class="hidden">
-        <p>Código: <strong id="displayCode" style="font-size: 30px;"></strong></p>
-        <input type="number" id="valueInput" placeholder="🔢 Insira o valor" inputmode="decimal">
-        <button class="btn-save" onclick="saveData()">💾 Guardar</button>
-        <button class="btn-cancel" onclick="cancelEntry()">❌ Cancelar</button>
+    <div id="tab-picagem" class="tab-content">
+        <div id="setup" class="box">
+            <div class="setup-header">
+                <h3>Identificação</h3>
+                <button class="btn-limpar" onclick="limparIdentificacao()">Limpar</button>
+            </div>
+            <input type="text" id="nomeColaborador" placeholder="Nome do Colaborador">
+            <input type="number" id="qtdTotal" placeholder="Quantidade de Peças">
+            <button onclick="iniciarLote()">INICIAR</button>
+        </div>
+
+        <div id="areaPicagem" class="box" style="display:none;">
+            <h3>Progresso</h3>
+            <div id="erroDuplicado" class="error-msg">Código já picado!</div>
+            <div style="font-size: 3em; text-align: center; margin: 20px 0; color: var(--secondary);">
+                <span id="contador">0</span> / <span id="total">0</span>
+            </div>
+            <input type="text" id="inputScan" placeholder="Escanear Data Matrix..." autocomplete="off">
+        </div>
+
+        <div id="popupRef" class="box" style="display:none;">
+            <h3>Referência</h3>
+            <input type="text" id="inputReferencia" placeholder="Escanear/Digitar Referência" autocomplete="off">
+        </div>
+
+        <div id="popupEtiqueta" class="box" style="display:none;">
+            <h3>Finalizar Lote</h3>
+            <input type="text" id="inputEtiqueta" placeholder="Escanear/Digitar Número de Etiqueta" autocomplete="off">
+        </div>
     </div>
 
-    <h3>Histórico</h3>
-    <table id="historyTable">
-        <thead><tr><th>Data/Hora</th><th>Código</th><th>Valor</th></tr></thead>
-        <tbody></tbody>
-    </table>
-
-    <button class="btn-danger" onclick="clearHistory()">🗑️ Limpar Histórico</button>
+    <div id="tab-historico" class="tab-content hidden">
+        <div id="containerHistorico"></div>
+        <button class="btn-danger" onclick="limparHistorico()">LIMPAR HISTÓRICO</button>
+    </div>
 
     <script>
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+        let db, total = 0, atual = 0, scansAtuais = [];
+        let referenciaTemp = "";
+        const inputScan = document.getElementById('inputScan');
 
-        let db;
-        let currentCode = "";
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwO88Rq6RvOuJaS_LLB-LfzXCfyklWmJo0uuJo-o7Od37SHVKU1UJxf0XCpdc9Bl3mm/exec";
-        
-        const request = indexedDB.open("ScannerDB", 1);
-        request.onupgradeneeded = e => { e.target.result.createObjectStore("leituras", { autoIncrement: true }); };
-        request.onsuccess = e => { db = e.target.result; renderHistory(); };
+        window.onload = () => {
+            if(localStorage.getItem('colaborador')) document.getElementById('nomeColaborador').value = localStorage.getItem('colaborador');
+            if(localStorage.getItem('quantidade')) document.getElementById('qtdTotal').value = localStorage.getItem('quantidade');
+        };
 
-        function getFormattedDate() {
-            const now = new Date();
-            const d = String(now.getDate()).padStart(2, '0');
-            const m = String(now.getMonth() + 1).padStart(2, '0');
-            const y = now.getFullYear();
-            const h = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            return `${d}/${m}/${y} ${h}:${min}`;
+        function limparIdentificacao() {
+            localStorage.removeItem('colaborador');
+            localStorage.removeItem('quantidade');
+            document.getElementById('nomeColaborador').value = '';
+            document.getElementById('qtdTotal').value = '';
         }
 
-        document.getElementById('scannerInput').addEventListener('keypress', function(e) {
+        function trocarTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+            if(tab === 'historico') carregarHistorico();
+        }
+
+        const request = indexedDB.open("SistemaPicagemDB", 1);
+        request.onupgradeneeded = (e) => { e.target.result.createObjectStore("lotes", { keyPath: "id", autoIncrement: true }); };
+        request.onsuccess = (e) => { db = e.target.result; };
+
+        function iniciarLote() {
+            const nome = document.getElementById('nomeColaborador').value;
+            const qtd = document.getElementById('qtdTotal').value;
+            if(!nome || !qtd || qtd <= 0) { alert("Preencha os campos iniciais."); return; }
+            localStorage.setItem('colaborador', nome);
+            localStorage.setItem('quantidade', qtd);
+            total = parseInt(qtd);
+            document.getElementById('total').innerText = total;
+            scansAtuais = []; atual = 0; document.getElementById('contador').innerText = '0';
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('areaPicagem').style.display = 'block';
+            inputScan.focus();
+        }
+
+        inputScan.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                const code = this.value;
-                const store = db.transaction("leituras", "readonly").objectStore("leituras");
-                
-                let found = false;
-                store.openCursor().onsuccess = (event) => {
-                    const cursor = event.target.result;
-                    if (cursor) {
-                        if (cursor.value.code === code) found = true;
-                        cursor.continue();
-                    } else {
-                        if (found) {
-                            alert("⚠️ Este código já existe!");
-                            document.getElementById('scannerInput').value = "";
-                        } else {
-                            currentCode = code;
-                            document.getElementById('displayCode').innerText = currentCode;
-                            document.getElementById('step1').classList.add('hidden');
-                            document.getElementById('step2').classList.remove('hidden');
-                            document.getElementById('valueInput').focus();
-                            document.getElementById('scannerInput').value = "";
-                        }
-                    }
-                };
+                const val = inputScan.value.trim();
+                if (!val) return;
+                if (scansAtuais.includes(val)) { document.getElementById('erroDuplicado').style.display = 'block'; inputScan.value = ''; return; }
+                document.getElementById('erroDuplicado').style.display = 'none';
+                scansAtuais.push(val);
+                atual++;
+                document.getElementById('contador').innerText = atual;
+                inputScan.value = '';
+                if (atual >= total) {
+                    document.getElementById('areaPicagem').style.display = 'none';
+                    document.getElementById('popupRef').style.display = 'block';
+                    document.getElementById('inputReferencia').focus();
+                }
             }
         });
 
-        function saveData() {
-            const val = document.getElementById('valueInput').value;
-            if(!val) return;
-            
-            const timestamp = getFormattedDate();
-            const data = { code: currentCode, value: val, timestamp: timestamp };
+        document.getElementById('inputReferencia').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && document.getElementById('inputReferencia').value) {
+                referenciaTemp = document.getElementById('inputReferencia').value;
+                document.getElementById('popupRef').style.display = 'none';
+                document.getElementById('popupEtiqueta').style.display = 'block';
+                document.getElementById('inputEtiqueta').focus();
+            }
+        });
 
-            const tx = db.transaction("leituras", "readwrite");
-            tx.objectStore("leituras").add(data);
-            
-            const params = new URLSearchParams({ code: data.code, value: data.value, timestamp: data.timestamp });
-            fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), { mode: 'no-cors' });
+        document.getElementById('inputEtiqueta').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && document.getElementById('inputEtiqueta').value) finalizar();
+        });
 
-            cancelEntry();
-            renderHistory();
+        function finalizar() {
+            const etiqueta = document.getElementById('inputEtiqueta').value;
+            const nome = document.getElementById('nomeColaborador').value;
+            const novoLote = { referencia: referenciaTemp, etiqueta, scans: scansAtuais, data: new Date().toLocaleString(), colab: nome };
+            db.transaction(["lotes"], "readwrite").objectStore("lotes").add(novoLote).onsuccess = () => {
+                location.reload();
+            };
         }
 
-        function cancelEntry() {
-            document.getElementById('valueInput').value = "";
-            document.getElementById('step1').classList.remove('hidden');
-            document.getElementById('step2').classList.add('hidden');
-            document.getElementById('scannerInput').focus();
-        }
-
-        function clearHistory() {
-            if (confirm("⚠️ TEM CERTEZA? Isto vai apagar todos os dados.")) {
-                const input = prompt("Para confirmar, escreva APAGAR abaixo:");
-                if (input === "APAGAR") {
-                    const tx = db.transaction("leituras", "readwrite");
-                    tx.objectStore("leituras").clear();
-                    tx.oncomplete = () => renderHistory();
+        function limparHistorico() {
+            if(confirm("Tem a certeza?")) {
+                const pin = prompt("Insira o código:");
+                if(pin === "1563") {
+                    db.transaction(["lotes"], "readwrite").objectStore("lotes").clear().onsuccess = () => {
+                        localStorage.clear();
+                        carregarHistorico();
+                        location.reload();
+                    };
                 }
             }
         }
 
-        function renderHistory() {
-            const tbody = document.querySelector('#historyTable tbody');
-            tbody.innerHTML = "";
-            db.transaction("leituras").objectStore("leituras").openCursor(null, 'prev').onsuccess = e => {
+        function carregarHistorico() {
+            const container = document.getElementById('containerHistorico');
+            container.innerHTML = '';
+            db.transaction("lotes").objectStore("lotes").openCursor(null, 'prev').onsuccess = (e) => {
                 const cursor = e.target.result;
                 if (cursor) {
-                    tbody.innerHTML += `<tr><td>${cursor.value.timestamp}</td><td>${cursor.value.code}</td><td>${cursor.value.value}</td></tr>`;
+                    const div = document.createElement('div');
+                    div.className = 'acordeao';
+                    div.innerHTML = `<div class="cabecalho" onclick="this.nextElementSibling.style.display=(this.nextElementSibling.style.display=='block'?'none':'block')">Etiqueta: ${cursor.value.etiqueta} <span class="badge">${cursor.value.scans.length}</span></div><div class="conteudo"><strong>Colaborador:</strong> ${cursor.value.colab || 'N/A'}<br><strong>Ref:</strong> ${cursor.value.referencia}<br><strong>Data:</strong> ${cursor.value.data}<ul>${cursor.value.scans.map(s=>`<li>${s}</li>`).join('')}</ul></div>`;
+                    container.appendChild(div);
                     cursor.continue();
                 }
             };
         }
+        
+        [inputScan, document.getElementById('inputReferencia'), document.getElementById('inputEtiqueta')].forEach(el => {
+            el.addEventListener('blur', () => setTimeout(() => el.focus(), 50));
+        });
     </script>
 </body>
 </html>
