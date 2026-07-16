@@ -6,47 +6,46 @@
     <title>Sistema de Picagem Industrial</title>
     <style>
         :root { --primary: #2c3e50; --secondary: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; --white: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 15px; display: flex; flex-direction: column; align-items: center; color: var(--primary); margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 20px; display: flex; flex-direction: column; align-items: center; color: var(--primary); margin: 0; font-size: 18px; }
         
-        .box { background: var(--white); border-radius: 16px; padding: 25px; width: 100%; max-width: 450px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 20px; box-sizing: border-box; }
-        .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .header-box img { height: 35px; }
-        .versao { font-size: 0.9em; font-weight: bold; color: #7f8c8d; }
+        .box { background: var(--white); border-radius: 20px; padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 25px; box-sizing: border-box; }
+        .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-box img { height: 50px; }
+        .versao { font-size: 1.1em; font-weight: bold; color: #7f8c8d; }
 
-        .tab-bar { display: flex; width: 100%; max-width: 450px; margin-bottom: 20px; background: #ddd; border-radius: 10px; padding: 4px; }
-        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: transparent; }
-        .tab-btn.active { background: var(--white); color: var(--secondary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .tab-bar { display: flex; width: 100%; max-width: 500px; margin-bottom: 25px; background: #ddd; border-radius: 15px; padding: 6px; }
+        .tab-btn { flex: 1; padding: 18px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1.1em; background: transparent; }
+        .tab-btn.active { background: var(--white); color: var(--secondary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        .setup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; margin-bottom: 10px; }
-        h3 { margin: 0; font-size: 1.4em; }
+        .setup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--secondary); padding-bottom: 15px; margin-bottom: 20px; }
+        h3 { margin: 0; font-size: 1.6em; }
         
         .btn-limpar { 
-            background: #f8f9fa; color: #e74c3c; border: 1px solid #e74c3c; 
-            padding: 4px 10px; border-radius: 8px; cursor: pointer; 
-            font-weight: bold; font-size: 0.75em; text-transform: uppercase;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: #f8f9fa; color: #e74c3c; border: 2px solid #e74c3c; 
+            padding: 10px 20px; border-radius: 12px; cursor: pointer; 
+            font-weight: bold; font-size: 0.9em; text-transform: uppercase;
         }
         .btn-limpar:hover { background: #e74c3c; color: white; }
 
-        input { width: 100%; padding: 18px; margin: 15px 0; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1.2em; }
-        button { width: 100%; padding: 20px; cursor: pointer; background: var(--secondary); color: white; border: none; border-radius: 10px; font-size: 1.2em; font-weight: bold; text-transform: uppercase; }
-        .btn-danger { background: var(--error); margin-top: 10px; }
-        .error-msg { color: var(--error); font-weight: bold; display: none; margin-bottom: 10px; }
+        input { width: 100%; padding: 25px; margin: 20px 0; border: 3px solid #ddd; border-radius: 15px; box-sizing: border-box; font-size: 1.4em; }
+        button { width: 100%; padding: 25px; cursor: pointer; background: var(--secondary); color: white; border: none; border-radius: 15px; font-size: 1.3em; font-weight: bold; text-transform: uppercase; }
+        .btn-danger { background: var(--error); margin-top: 20px; }
+        .error-msg { color: var(--error); font-weight: bold; font-size: 1.2em; display: none; margin-bottom: 15px; text-align: center; }
         
-        .tab-content { width: 100%; max-width: 450px; }
+        .tab-content { width: 100%; max-width: 500px; }
         .hidden { display: none; }
 
-        .acordeao { background: var(--white); border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; }
-        .cabecalho { padding: 20px; cursor: pointer; font-size: 1.1em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid var(--secondary); }
-        .conteudo { display: none; padding: 20px; background: #fafafa; border-top: 1px solid #eee; font-size: 1em; }
-        .badge { background: var(--secondary); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.9em; }
+        .acordeao { background: var(--white); border-radius: 16px; margin-bottom: 20px; box-shadow: 0 6px 15px rgba(0,0,0,0.08); overflow: hidden; }
+        .cabecalho { padding: 25px; cursor: pointer; font-size: 1.3em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid var(--secondary); }
+        .conteudo { display: none; padding: 25px; background: #fafafa; border-top: 1px solid #eee; font-size: 1.1em; line-height: 1.6; }
+        .badge { background: var(--secondary); color: white; padding: 8px 20px; border-radius: 30px; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
     <div class="box header-box">
         <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo">
-        <span class="versao">v1.0.0</span>
+        <span class="versao">v2.0.0</span>
     </div>
 
     <div class="tab-bar">
@@ -68,7 +67,7 @@
         <div id="areaPicagem" class="box" style="display:none;">
             <h3>Progresso</h3>
             <div id="erroDuplicado" class="error-msg">Código já picado!</div>
-            <div style="font-size: 3em; text-align: center; margin: 20px 0; color: var(--secondary);">
+            <div style="font-size: 4em; text-align: center; margin: 30px 0; color: var(--secondary);">
                 <span id="contador">0</span> / <span id="total">0</span>
             </div>
             <input type="text" id="inputScan" placeholder="Escanear Data Matrix..." autocomplete="off">
@@ -81,7 +80,7 @@
 
         <div id="popupEtiqueta" class="box" style="display:none;">
             <h3>Finalizar Lote</h3>
-            <input type="text" id="inputEtiqueta" placeholder="Escanear/Digitar Número de Etiqueta" autocomplete="off">
+            <input type="text" id="inputEtiqueta" placeholder="Escanear Número de Etiqueta" autocomplete="off">
         </div>
     </div>
 
