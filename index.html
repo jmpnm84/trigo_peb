@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistema de Picagem Industrial</title>
     <link rel="manifest" href="manifest.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root { --primary: #2c3e50; --secondary: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; --white: #ffffff; }
         html { font-size: 10px; height: 100%; }
@@ -40,7 +41,7 @@
 <body>
     <div class="box header-box">
         <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo">
-        <span class="versao">v3.1.0</span>
+        <span class="versao">v3.1.1</span>
     </div>
     <div class="tab-bar">
         <button class="tab-btn active" onclick="trocarTab('picagem')">PICAGEM</button>
@@ -210,20 +211,16 @@
             });
 
             if (tipo === 'xlsx') {
-                let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-                csvContent += "ID Lote;Data;Colaborador;Referencia;Etiqueta;Total;Data Matrix;Estanquidade\n";
+                let wsData = [["ID Lote", "Data", "Colaborador", "Referencia", "Etiqueta", "Total", "Data Matrix", "Estanquidade"]];
                 selecionados.forEach(v => {
                     v.itens.forEach(i => {
-                        csvContent += `"${v.id}";"${v.data}";"${v.colab}";"${v.referencia}";"${v.etiqueta}";"${v.total}";"${i.dataMatrix}";"${i.estanquidade}"\n`;
+                        wsData.push([v.id, v.data, v.colab, v.referencia, v.etiqueta, v.total, i.dataMatrix, i.estanquidade]);
                     });
                 });
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "historico_picagem.csv");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Historico");
+                XLSX.writeFile(wb, "historico_picagem.xlsx");
             } else if (tipo === 'pdf') {
                 let htmlJanela = `<html><head><title>Relatório de Picagem</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#333;}h1{color:#2c3e50;}table{width:100%;border-collapse:collapse;margin-top:20px;}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px;}th{background-color:#3498db;color:white;}.bloco{margin-bottom:30px;page-break-inside:avoid;}</style></head><body><h1>Relatório de Picagem Industrial</h1>`;
                 selecionados.forEach(v => {
