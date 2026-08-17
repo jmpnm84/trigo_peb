@@ -22,20 +22,25 @@
         button { width: 100%; padding: 2rem; cursor: pointer; background: var(--secondary); color: white; border: none; border-radius: 2rem; font-size: 2rem; font-weight: bold; text-transform: uppercase; }
         .btn-limpar { background: #f8f9fa; color: #e74c3c; border: 0.3rem solid #e74c3c; padding: 1rem 2rem; font-size: 1.4rem; width: auto; }
         .btn-danger { background: #e74c3c; margin-top: 2rem; }
+        .btn-export { background: var(--success); margin-bottom: 1.5rem; }
         .tab-content { width: 100%; max-width: 80rem; }
         .hidden { display: none; }
-        .acordeao { background: var(--white); border-radius: 2rem; margin-bottom: 2rem; box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.05); overflow: hidden; }
+        .acordeao { background: var(--white); border-radius: 2rem; margin-bottom: 2rem; box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.05); overflow: hidden; display: flex; align-items: center; padding-right: 2rem; }
+        .acordeao-checkbox { margin-left: 2rem; width: 2.5rem; height: 2.5rem; cursor: pointer; }
+        .acordeao-corpo { flex: 1; }
         .cabecalho { padding: 2.5rem; cursor: pointer; font-size: 1.8rem; font-weight: bold; display: flex; justify-content: space-between; border-left: 1rem solid var(--secondary); }
         .conteudo { display: none; padding: 2rem; font-size: 1.4rem; border-top: 0.2rem solid #eee; }
         .badge { background: var(--secondary); color: white; padding: 0.5rem 1.5rem; border-radius: 2rem; }
         #contador-display { font-size: 6rem; text-align: center; margin: 2rem 0; color: var(--secondary); font-weight: bold; }
         .item-row { border-bottom: 1px solid #eee; padding: 0.5rem 0; }
+        .historico-acoes { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .historico-acoes button { font-size: 1.4rem; padding: 1.5rem; }
     </style>
 </head>
 <body>
     <div class="box header-box">
         <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo">
-        <span class="versao">v2.5.0</span>
+        <span class="versao">v3.1.0</span>
     </div>
     <div class="tab-bar">
         <button class="tab-btn active" onclick="trocarTab('picagem')">PICAGEM</button>
@@ -73,11 +78,17 @@
         </div>
     </div>
     <div id="tab-historico" class="tab-content hidden">
+        <div class="historico-acoes">
+            <button onclick="exportarSelecionados('xlsx')" class="btn-export">Exportar XLSX (Selecionados)</button>
+            <button onclick="exportarSelecionados('pdf')" class="btn-export" style="background: var(--secondary);">Exportar PDF (Selecionados)</button>
+            <button onclick="selecionarTodos(true)" class="btn-limpar" style="color: var(--secondary); border-color: var(--secondary);">Selecionar Todos</button>
+        </div>
         <div id="containerHistorico"></div>
         <button class="btn-danger" onclick="limparHistorico()">LIMPAR HISTÓRICO</button>
     </div>
     <script>
         let db, total = 0, atual = 0, dadosPicagem = [], scanTemp = "", referenciaTemp = "", scansRealizados = new Set();
+        let lotesCache = {};
         const inputScan = document.getElementById('inputScan');
         const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbwO88Rq6RvOuJaS_LLB-LfzXCfyklWmJo0uuJo-o7Od37SHVKU1UJxf0XCpdc9Bl3mm/exec";
         
@@ -155,23 +166,82 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.toggle('hidden', !el.id.includes(tab)));
             if(tab === 'historico') carregarHistorico();
         }
+
         function carregarHistorico() {
-            const container = document.getElementById('containerHistorico'); container.innerHTML = '';
+            const container = document.getElementById('containerHistorico'); 
+            container.innerHTML = '';
+            lotesCache = {};
             db.transaction("lotes").objectStore("lotes").openCursor(null, 'prev').onsuccess = (e) => {
                 const cursor = e.target.result;
                 if (cursor) {
                     const v = cursor.value;
+                    lotesCache[v.id] = v;
                     let htmlItens = v.itens.map(i => `<div class="item-row"><b>DM:</b> ${i.dataMatrix} | <b>Est:</b> ${i.estanquidade}</div>`).join('');
-                    const div = document.createElement('div'); div.className = 'acordeao';
-                    div.innerHTML = `<div class="cabecalho" onclick="this.nextElementSibling.style.display=(this.nextElementSibling.style.display=='block'?'none':'block')">ETQ: ${v.etiqueta} <span class="badge">${v.total} Un.</span></div>
-                    <div class="conteudo">
-                        <p><b>Data:</b> ${v.data} | <b>Colab:</b> ${v.colab} | <b>Ref:</b> ${v.referencia}</p>
-                        ${htmlItens}
-                    </div>`;
-                    container.appendChild(div); cursor.continue();
+                    const div = document.createElement('div'); 
+                    div.className = 'acordeao';
+                    div.innerHTML = `
+                        <input type="checkbox" class="acordeao-checkbox" value="${v.id}" />
+                        <div class="acordeao-corpo">
+                            <div class="cabecalho" onclick="const c = this.nextElementSibling; c.style.display=(c.style.display=='block'?'none':'block')">ETQ: ${v.etiqueta} <span class="badge">${v.total} Un.</span></div>
+                            <div class="conteudo">
+                                <p><b>Data:</b> ${v.data} | <b>Colab:</b> ${v.colab} | <b>Ref:</b> ${v.referencia}</p>
+                                ${htmlItens}
+                            </div>
+                        </div>`;
+                    container.appendChild(div); 
+                    cursor.continue();
                 }
             };
         }
+
+        function selecionarTodos(marcar) {
+            document.querySelectorAll('.acordeao-checkbox').forEach(cb => cb.checked = marcar);
+        }
+
+        function exportarSelecionados(tipo) {
+            const checkboxes = document.querySelectorAll('.acordeao-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert("Por favor, selecione pelo menos um registo do histórico!");
+                return;
+            }
+            let selecionados = [];
+            checkboxes.forEach(cb => {
+                if(lotesCache[cb.value]) selecionados.push(lotesCache[cb.value]);
+            });
+
+            if (tipo === 'xlsx') {
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+                csvContent += "ID Lote;Data;Colaborador;Referencia;Etiqueta;Total;Data Matrix;Estanquidade\n";
+                selecionados.forEach(v => {
+                    v.itens.forEach(i => {
+                        csvContent += `"${v.id}";"${v.data}";"${v.colab}";"${v.referencia}";"${v.etiqueta}";"${v.total}";"${i.dataMatrix}";"${i.estanquidade}"\n`;
+                    });
+                });
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "historico_picagem.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else if (tipo === 'pdf') {
+                let htmlJanela = `<html><head><title>Relatório de Picagem</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#333;}h1{color:#2c3e50;}table{width:100%;border-collapse:collapse;margin-top:20px;}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px;}th{background-color:#3498db;color:white;}.bloco{margin-bottom:30px;page-break-inside:avoid;}</style></head><body><h1>Relatório de Picagem Industrial</h1>`;
+                selecionados.forEach(v => {
+                    htmlJanela += `<div class="bloco"><h3>Etiqueta: ${v.etiqueta} (Ref: ${v.referencia})</h3><p><b>Data:</b> ${v.data} | <b>Colaborador:</b> ${v.colab} | <b>Total Unidades:</b> ${v.total}</p><table><tr><th>Data Matrix</th><th>Estanquidade</th></tr>`;
+                    v.itens.forEach(i => {
+                        htmlJanela += `<tr><td>${i.dataMatrix}</td><td>${i.estanquidade}</td></tr>`;
+                    });
+                    htmlJanela += `</table></div>`;
+                });
+                htmlJanela += `</body></html>`;
+                const janela = window.open('', '', 'height=700,width=900');
+                janela.document.write(htmlJanela);
+                janela.document.close();
+                janela.focus();
+                setTimeout(() => { janela.print(); janela.close(); }, 500);
+            }
+        }
+
         function limparIdentificacao() { document.getElementById('nomeColaborador').value = ''; document.getElementById('qtdTotal').value = ''; }
         function limparHistorico() { 
             const pin = prompt("Insira o PIN para confirmar a limpeza:");
