@@ -1,253 +1,455 @@
 <!DOCTYPE html>
-<html lang="pt-pt">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Sistema de Picagem Industrial</title>
+    
     <link rel="manifest" href="manifest.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <style>
-        :root { --primary: #2c3e50; --secondary: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f4f7f6; --white: #ffffff; }
-        html { font-size: 10px; height: 100%; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 2rem; color: var(--primary); display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; }
-        .box { background: var(--white); border-radius: 4rem; padding: 4rem; width: 100%; max-width: 80rem; box-shadow: 0 2rem 5rem rgba(0,0,0,0.1); margin-bottom: 3rem; box-sizing: border-box; }
-        .header-box { display: flex; justify-content: space-between; align-items: center; }
-        .header-box img { height: 6rem; }
-        .versao { font-size: 1.5rem; font-weight: bold; color: #7f8c8d; }
-        .tab-bar { display: flex; width: 100%; max-width: 80rem; margin-bottom: 3rem; background: #ddd; border-radius: 3rem; padding: 0.5rem; }
-        .tab-btn { flex: 1; padding: 2rem; border: none; border-radius: 2.5rem; cursor: pointer; font-weight: bold; font-size: 1.8rem; background: transparent; }
-        .tab-btn.active { background: var(--white); color: var(--secondary); box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1); }
-        h3 { margin: 0 0 2rem 0; font-size: 2.5rem; }
-        label { display: block; font-weight: bold; color: var(--secondary); font-size: 1.4rem; margin-top: 1.5rem; text-transform: uppercase; }
-        input { width: 100%; padding: 2rem; margin: 1rem 0 2rem 0; border: 0.4rem solid #ddd; border-radius: 2rem; font-size: 2.2rem; text-align: center; box-sizing: border-box; }
-        button { width: 100%; padding: 2rem; cursor: pointer; background: var(--secondary); color: white; border: none; border-radius: 2rem; font-size: 2rem; font-weight: bold; text-transform: uppercase; }
-        .btn-limpar { background: #f8f9fa; color: #e74c3c; border: 0.3rem solid #e74c3c; padding: 1rem 2rem; font-size: 1.4rem; width: auto; }
-        .btn-danger { background: #e74c3c; margin-top: 2rem; }
-        .btn-export { background: var(--success); margin-bottom: 1.5rem; }
-        .tab-content { width: 100%; max-width: 80rem; }
-        .hidden { display: none; }
-        .acordeao { background: var(--white); border-radius: 2rem; margin-bottom: 2rem; box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.05); overflow: hidden; display: flex; align-items: center; padding-right: 2rem; }
-        .acordeao-checkbox { margin-left: 2rem; width: 2.5rem; height: 2.5rem; cursor: pointer; }
-        .acordeao-corpo { flex: 1; }
-        .cabecalho { padding: 2.5rem; cursor: pointer; font-size: 1.8rem; font-weight: bold; display: flex; justify-content: space-between; border-left: 1rem solid var(--secondary); }
-        .conteudo { display: none; padding: 2rem; font-size: 1.4rem; border-top: 0.2rem solid #eee; }
-        .badge { background: var(--secondary); color: white; padding: 0.5rem 1.5rem; border-radius: 2rem; }
-        #contador-display { font-size: 6rem; text-align: center; margin: 2rem 0; color: var(--secondary); font-weight: bold; }
-        .item-row { border-bottom: 1px solid #eee; padding: 0.5rem 0; }
-        .historico-acoes { display: flex; gap: 1rem; margin-bottom: 2rem; }
-        .historico-acoes button { font-size: 1.4rem; padding: 1.5rem; }
+        :root { 
+            --primary: #2c3e50; 
+            --secondary: #3498db; 
+            --success: #27ae60; 
+            --error: #e74c3c; 
+            --bg: #f4f7f6; 
+            --white: #ffffff; 
+        }
+        
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; padding: 10px; color: var(--primary); }
+        .container { max-width: 900px; margin: auto; background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .logo-container { display: flex; flex-direction: column; align-items: flex-end; }
+        .logo-img { height: 45px; width: auto; object-fit: contain; }
+        .version-text { font-size: 11px; font-weight: bold; color: #7f8c8d; margin-top: 2px; font-family: monospace; }
+
+        .tabs { display: flex; gap: 5px; }
+        .tab-btn { padding: 10px 18px; border: none; cursor: pointer; background: #ddd; color: #666; font-weight: bold; border-radius: 6px 6px 0 0; font-size: 13px; transition: 0.2s; }
+        .tab-btn.active { background: var(--secondary); color: white; }
+
+        .header-section { background: var(--primary); padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+        .inputs-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+        label { display: block; font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #ffffff; text-transform: uppercase; }
+        input, select { width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; height: 38px; }
+
+        .dash { display: flex; gap: 10px; margin-bottom: 12px; }
+        .counter-card { flex: 1; padding: 12px; border-radius: 8px; color: white; text-align: center; position: relative; background: var(--secondary); }
+        .counter-card h2 { margin: 5px 0 0 0; font-size: 1.8em; }
+        .perc-badge { position: absolute; top: 8px; right: 10px; font-size: 11px; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 10px; }
+        .progress-box { width: 100%; height: 6px; background: rgba(0,0,0,0.15); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+        .progress-bar { height: 100%; background: #fff; width: 0%; transition: width 0.3s ease; }
+
+        .scan-area { background: #2c3e50; color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 12px; }
+        #inputScan { width: 100%; max-width: 450px; text-align: center; border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.1); color: white; font-size: 16px; outline: none; }
+
+        .buffer-box { background: #fff; border-radius: 8px; border: 1px solid #ddd; overflow: hidden; margin-bottom: 12px; }
+        .buffer-header { background: var(--secondary); color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 12px; }
+        .btn-mini-finish { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+        .buffer-list { max-height: 200px; overflow-y: auto; padding: 5px; font-size: 12px; }
+        .buffer-item { cursor: pointer; padding: 6px 10px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; }
+        .buffer-item:hover { background: #fff5f5; color: var(--error); }
+
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
+        .modal-content { background:white; padding:20px; border-radius:10px; text-align:center; width:95%; max-width:350px; }
+        .btn-decision { padding: 12px; font-size: 1em; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; margin-top: 10px; width: 100%; background: var(--secondary); }
+        
+        #custom-toast { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border-radius: 20px; color: white; z-index: 9999; display: none; font-size: 13px; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        .accordion-item { border: 1px solid #ddd; margin-bottom: 8px; border-radius: 6px; overflow: hidden; }
+        .accordion-header { background: #e0e0e0; padding: 12px; cursor: pointer; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; }
+        .accordion-content { padding: 10px; display: none; background: white; font-size: 12px; }
+        .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 15px; }
+        .btn-page { padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: white; font-weight: bold; }
+        .filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
     </style>
 </head>
 <body>
-    <div class="box header-box">
-        <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo">
-        <span class="versao">v3.1.1</span>
-    </div>
-    <div class="tab-bar">
-        <button class="tab-btn active" onclick="trocarTab('picagem')">PICAGEM</button>
-        <button class="tab-btn" onclick="trocarTab('historico')">HISTÓRICO</button>
-    </div>
-    <div id="tab-picagem" class="tab-content">
-        <div id="setup" class="box">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h3>Identificação</h3>
-                <button class="btn-limpar" onclick="limparIdentificacao()">Limpar</button>
+
+<div id="custom-toast"></div>
+
+<main class="container">
+    <header class="top-bar">
+        <nav class="tabs">
+            <button class="tab-btn active" id="btn-reg" onclick="switchTab('registo')">PICAGEM</button>
+            <button class="tab-btn" id="btn-hist" onclick="switchTab('historico')">HISTÓRICO</button>
+        </nav>
+        <div class="logo-container">
+            <img src="https://github.com/user-attachments/assets/7df2b6a5-d732-4175-8f59-9c644d62934b" alt="Logo" class="logo-img">
+            <span class="version-text">v4.1.1</span>
+        </div>
+    </header>
+
+    <section id="view-registo">
+        <div class="header-section">
+            <div class="inputs-row">
+                <div>
+                    <label>Nome do Colaborador</label>
+                    <input type="text" id="nomeColaborador" list="dl-colab">
+                </div>
+                <div>
+                    <label>Quantidade do Lote</label>
+                    <input type="number" id="qtdTotal" min="1" onchange="updateUI()">
+                </div>
             </div>
-            <label>Nome</label>
-            <input type="text" id="nomeColaborador">
-            <label>Quantidade</label>
-            <input type="number" id="qtdTotal">
-            <button onclick="iniciarLote()">INICIAR</button>
         </div>
-        <div id="areaPicagem" class="box" style="display:none;">
-            <h3>Progresso</h3>
-            <div id="contador-display"><span id="contador">0</span> / <span id="total">0</span></div>
-            <label>Data Matrix</label>
-            <input type="text" id="inputScan" autocomplete="off">
+
+        <div class="dash">
+            <div class="counter-card">
+                <div class="perc-badge" id="perc-progresso">0%</div>
+                <span>PROGRESSO DO LOTE</span>
+                <h2 id="contador-display"><span id="contador">0</span> / <span id="total">0</span></h2>
+                <div class="progress-box"><div id="bar-progresso" class="progress-bar"></div></div>
+            </div>
         </div>
-        <div id="popupEstanquidade" class="box" style="display:none;">
-            <h3>Valor Estanquidade</h3>
-            <input type="text" id="inputEstanquidade" autocomplete="off">
+
+        <div class="scan-area">
+            <h3 style="margin:0 0 8px 0; font-size:13px;">DATA MATRIX</h3>
+            <input type="text" id="inputScan" autocomplete="off" placeholder="Aguardando leitura..." onkeydown="handleScan(event)">
         </div>
-        <div id="popupRef" class="box" style="display:none;">
-            <h3>Referência</h3>
-            <input type="text" id="inputReferencia" autocomplete="off">
+
+        <div class="buffer-box">
+            <div class="buffer-header">
+                <span>PEÇAS PICADAS NESTE LOTE</span>
+                <button class="btn-mini-finish" onclick="forceFinish()">FECHAR LOTE</button>
+            </div>
+            <div id="buffer-list" class="buffer-list"></div>
         </div>
-        <div id="popupEtiqueta" class="box" style="display:none;">
-            <h3>Número Etiqueta</h3>
-            <input type="text" id="inputEtiqueta" autocomplete="off">
+    </section>
+
+    <section id="view-historico" style="display:none; background: var(--primary); padding: 15px; border-radius: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: white;">
+            <span id="hist-counter" style="font-size: 12px; font-weight: bold;">Registos: 0</span>
+            <div style="display:flex; gap:6px;">
+                <button onclick="exportExcel()" style="background:var(--success); border:none; color:white; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">📤 EXCEL</button>
+                <button onclick="clearHistorySecure()" style="background:var(--error); border:none; color:white; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">LIMPAR</button>
+            </div>
         </div>
+        <div class="filter-bar">
+            <div><label>Colaborador</label><select id="f-colab" onchange="renderHist()"></select></div>
+            <div><label>Referência</label><select id="f-ref" onchange="renderHist()"></select></div>
+            <div><label>Pesquisar Etiqueta/DM</label><input type="text" id="f-search" oninput="renderHist()"></div>
+        </div>
+        <div id="accordion-container" style="background:white; padding:8px; border-radius:6px; min-height: 100px;"></div>
+        <div id="pagination-container" class="pagination"></div>
+    </section>
+</main>
+
+<!-- Modal para Estanquidade -->
+<div id="modalEstanquidade" class="modal">
+    <div class="modal-content">
+        <h3>Valor Estanquidade</h3>
+        <div id="dm-display" style="font-size:12px; margin-bottom:10px; color:#666; font-family:monospace;"></div>
+        <input type="text" id="inputEstanquidade" autocomplete="off" placeholder="Insira o valor..." onkeydown="handleEstanquidade(event)">
+        <button onclick="closeModalEstanquidade()" style="border:none; background:none; font-size:12px; color:grey; cursor:pointer; margin-top:15px;">CANCELAR</button>
     </div>
-    <div id="tab-historico" class="tab-content hidden">
-        <div class="historico-acoes">
-            <button onclick="exportarSelecionados('xlsx')" class="btn-export">Exportar XLSX (Selecionados)</button>
-            <button onclick="exportarSelecionados('pdf')" class="btn-export" style="background: var(--secondary);">Exportar PDF (Selecionados)</button>
-            <button onclick="selecionarTodos(true)" class="btn-limpar" style="color: var(--secondary); border-color: var(--secondary);">Selecionar Todos</button>
-        </div>
-        <div id="containerHistorico"></div>
-        <button class="btn-danger" onclick="limparHistorico()">LIMPAR HISTÓRICO</button>
+</div>
+
+<!-- Modal para Fecho de Lote (Referência e Etiqueta) -->
+<div id="modalFecho" class="modal">
+    <div class="modal-content">
+        <h3>Finalizar Lote</h3>
+        <label style="color: #333; text-align: left; margin-top: 8px;">Referência</label>
+        <input type="text" id="inputReferencia" autocomplete="off" placeholder="Insira a referência" style="margin-bottom:10px;">
+        <label style="color: #333; text-align: left;">Número da Etiqueta</label>
+        <input type="text" id="inputEtiqueta" autocomplete="off" placeholder="Digitalize a etiqueta" style="margin-bottom:15px;" onkeydown="handleFechoEnter(event)">
+        <button class="btn-decision" onclick="confirmFinishLote()">GUARDAR E ENVIAR</button>
+        <button onclick="closeModalFecho()" style="border:none; background:none; font-size:12px; color:grey; cursor:pointer; margin-top:15px;">CANCELAR</button>
     </div>
-    <script>
-        let db, total = 0, atual = 0, dadosPicagem = [], scanTemp = "", referenciaTemp = "", scansRealizados = new Set();
-        let lotesCache = {};
-        const inputScan = document.getElementById('inputScan');
-        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbwO88Rq6RvOuJaS_LLB-LfzXCfyklWmJo0uuJo-o7Od37SHVKU1UJxf0XCpdc9Bl3mm/exec";
-        
-        const request = indexedDB.open("SistemaPicagemDB", 1);
-        request.onupgradeneeded = (e) => { e.target.result.createObjectStore("lotes", { keyPath: "id", autoIncrement: true }); };
-        request.onsuccess = (e) => { db = e.target.result; };
+</div>
 
-        function iniciarLote() {
-            const nome = document.getElementById('nomeColaborador').value;
-            const qtd = document.getElementById('qtdTotal').value;
-            if(!nome || !qtd) return;
-            total = parseInt(qtd);
-            document.getElementById('total').innerText = total;
-            document.getElementById('setup').style.display = 'none';
-            document.getElementById('areaPicagem').style.display = 'block';
-            inputScan.focus();
-        }
+<datalist id="dl-colab"></datalist>
 
-        inputScan.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const val = inputScan.value.trim();
-                if (!val) return;
-                if (scansRealizados.has(val)) {
-                    alert("Atenção: Data Matrix já picado neste lote!");
-                    inputScan.value = '';
-                    return;
-                }
-                scanTemp = val;
-                document.getElementById('areaPicagem').style.display = 'none';
-                document.getElementById('popupEstanquidade').style.display = 'block';
-                document.getElementById('inputEstanquidade').focus();
-            }
-        });
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('Erro SW:', err));
+    }
 
-        document.getElementById('inputEstanquidade').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && e.target.value) {
-                scansRealizados.add(scanTemp);
-                dadosPicagem.push({ dataMatrix: scanTemp, estanquidade: e.target.value });
-                atual++;
-                document.getElementById('contador').innerText = atual;
-                e.target.value = '';
-                document.getElementById('popupEstanquidade').style.display = 'none';
-                if (atual >= total) {
-                    document.getElementById('popupRef').style.display = 'block';
-                    document.getElementById('inputReferencia').focus();
-                } else {
-                    document.getElementById('areaPicagem').style.display = 'block';
-                    inputScan.value = '';
-                    inputScan.focus();
-                }
-            }
-        });
+    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbwO88Rq6RvOuJaS_LLB-LfzXCfyklWmJo0uuJo-o7Od37SHVKU1UJxf0XCpdc9Bl3mm/exec";
 
-        document.getElementById('inputReferencia').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && e.target.value) { 
-                referenciaTemp = e.target.value; 
-                document.getElementById('popupRef').style.display = 'none'; 
-                document.getElementById('popupEtiqueta').style.display = 'block'; 
-                document.getElementById('inputEtiqueta').focus();
-            }
-        });
+    let dbInstance = null;
+    let memory = { users: [] };
+    let bufferItens = [];
+    let scanTemp = "";
+    let currentPage = 1;
+    const itemsPerPage = 5;
 
-        document.getElementById('inputEtiqueta').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && e.target.value) {
-                const now = new Date();
-                const dataFormatada = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-                const pacote = { referencia: referenciaTemp, etiqueta: e.target.value, itens: dadosPicagem, data: dataFormatada, colab: document.getElementById('nomeColaborador').value, total: total };
-                db.transaction(["lotes"], "readwrite").objectStore("lotes").add(pacote).onsuccess = () => {
-                    fetch(URL_SCRIPT, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pacote) }).then(() => { alert("Lote enviado!"); location.reload(); });
-                };
-            }
-        });
-
-        function trocarTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.toggle('hidden', !el.id.includes(tab)));
-            if(tab === 'historico') carregarHistorico();
-        }
-
-        function carregarHistorico() {
-            const container = document.getElementById('containerHistorico'); 
-            container.innerHTML = '';
-            lotesCache = {};
-            db.transaction("lotes").objectStore("lotes").openCursor(null, 'prev').onsuccess = (e) => {
-                const cursor = e.target.result;
-                if (cursor) {
-                    const v = cursor.value;
-                    lotesCache[v.id] = v;
-                    let htmlItens = v.itens.map(i => `<div class="item-row"><b>DM:</b> ${i.dataMatrix} | <b>Est:</b> ${i.estanquidade}</div>`).join('');
-                    const div = document.createElement('div'); 
-                    div.className = 'acordeao';
-                    div.innerHTML = `
-                        <input type="checkbox" class="acordeao-checkbox" value="${v.id}" />
-                        <div class="acordeao-corpo">
-                            <div class="cabecalho" onclick="const c = this.nextElementSibling; c.style.display=(c.style.display=='block'?'none':'block')">ETQ: ${v.etiqueta} <span class="badge">${v.total} Un.</span></div>
-                            <div class="conteudo">
-                                <p><b>Data:</b> ${v.data} | <b>Colab:</b> ${v.colab} | <b>Ref:</b> ${v.referencia}</p>
-                                ${htmlItens}
-                            </div>
-                        </div>`;
-                    container.appendChild(div); 
-                    cursor.continue();
-                }
+    function initIndexedDB() {
+        return new Promise((resolve) => {
+            const request = indexedDB.open("SistemaPicagemDB", 2);
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains("historico")) db.createObjectStore("historico", { keyPath: "id", autoIncrement: true });
+                if (!db.objectStoreNames.contains("app_state")) db.createObjectStore("app_state");
             };
-        }
+            request.onsuccess = async (e) => {
+                dbInstance = e.target.result;
+                await loadStateFromDB();
+                resolve();
+            };
+        });
+    }
 
-        function selecionarTodos(marcar) {
-            document.querySelectorAll('.acordeao-checkbox').forEach(cb => cb.checked = marcar);
-        }
+    function getFromDB(storeName, key) { return new Promise((resolve) => { const t = dbInstance.transaction([storeName], "readonly"); const r = t.objectStore(storeName).get(key); r.onsuccess = () => resolve(r.result); r.onerror = () => resolve(null); }); }
+    function saveToDB(storeName, key, value) { return new Promise((resolve) => { const t = dbInstance.transaction([storeName], "readwrite"); const r = t.objectStore(storeName).put(value, key); r.onsuccess = () => resolve(true); r.onerror = () => resolve(false); }); }
+    function getAllFromDB(storeName) { return new Promise((resolve) => { const t = dbInstance.transaction([storeName], "readonly"); const r = t.objectStore(storeName).getAll(); r.onsuccess = () => resolve(r.result || []); r.onerror = () => resolve([]); }); }
+    function clearStore(storeName) { return new Promise((resolve) => { const t = dbInstance.transaction([storeName], "readwrite"); const r = t.objectStore(storeName).clear(); r.onsuccess = () => resolve(true); }); }
 
-        function exportarSelecionados(tipo) {
-            const checkboxes = document.querySelectorAll('.acordeao-checkbox:checked');
-            if (checkboxes.length === 0) {
-                alert("Por favor, selecione pelo menos um registo do histórico!");
+    async function loadStateFromDB() {
+        memory = await getFromDB("app_state", "memory") || { users: [] };
+        bufferItens = await getFromDB("app_state", "buffer") || [];
+    }
+
+    async function saveBufferState() { await saveToDB("app_state", "buffer", bufferItens); }
+    async function saveMemoryState() { await saveToDB("app_state", "memory", memory); }
+
+    function showPopup(msg, type = 'success') {
+        const toast = document.getElementById('custom-toast');
+        toast.innerText = msg;
+        toast.style.background = type === 'success' ? 'var(--success)' : 'var(--error)';
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+
+    function switchTab(t) {
+        document.getElementById('view-registo').style.display = t === 'registo' ? 'block' : 'none';
+        document.getElementById('view-historico').style.display = t === 'historico' ? 'block' : 'none';
+        document.getElementById('btn-reg').classList.toggle('active', t === 'registo');
+        document.getElementById('btn-hist').classList.toggle('active', t === 'historico');
+        if(t === 'historico') { updateFilterOptions(); currentPage = 1; renderHist(); } else { focusScan(); }
+    }
+
+    function updateUI() {
+        const qtdTotalVal = document.getElementById('qtdTotal').value;
+        const total = parseInt(qtdTotalVal) || 0;
+        const atual = bufferItens.length;
+        const perc = total > 0 ? Math.round((atual / total) * 100) : 0;
+
+        document.getElementById('contador').innerText = atual;
+        document.getElementById('total').innerText = total || '-';
+        document.getElementById('perc-progresso').innerText = `${perc}%`;
+        document.getElementById('bar-progresso').style.width = Math.min(perc, 100) + "%";
+
+        document.getElementById('buffer-list').innerHTML = bufferItens.map((i, idx) => 
+            `<div class="buffer-item" onclick="removeItem(${idx})"><span><b>DM:</b> ${i.dataMatrix}</span> <span><b>Est:</b> ${i.estanquidade}</span></div>`
+        ).reverse().join('');
+    }
+
+    async function removeItem(idx) {
+        if(confirm("Deseja remover este item do buffer?")) {
+            bufferItens.splice(idx, 1);
+            await saveBufferState();
+            updateUI();
+        }
+    }
+
+    function handleScan(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            const val = e.target.value.trim();
+            e.target.value = '';
+            if (!val) return;
+
+            const nome = document.getElementById('nomeColaborador').value.trim();
+            const total = document.getElementById('qtdTotal').value.trim();
+            if (!nome || !total) {
+                showPopup("Preencha o Nome e a Quantidade primeiro!", "error");
                 return;
             }
-            let selecionados = [];
-            checkboxes.forEach(cb => {
-                if(lotesCache[cb.value]) selecionados.push(lotesCache[cb.value]);
+
+            if (bufferItens.some(i => i.dataMatrix === val)) {
+                showPopup("Atenção: Data Matrix já picado neste lote!", "error");
+                return;
+            }
+
+            scanTemp = val;
+            document.getElementById('dm-display').innerText = val;
+            document.getElementById('modalEstanquidade').style.display = 'flex';
+            document.getElementById('inputEstanquidade').value = '';
+            document.getElementById('inputEstanquidade').focus();
+        }
+    }
+
+    async function handleEstanquidade(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            const estVal = e.target.value.trim();
+            if (!estVal) return;
+
+            bufferItens.push({ dataMatrix: scanTemp, estanquidade: estVal });
+            e.target.value = '';
+            document.getElementById('modalEstanquidade').style.display = 'none';
+            await saveBufferState();
+            updateUI();
+
+            const total = parseInt(document.getElementById('qtdTotal').value) || 0;
+            if (bufferItens.length >= total) {
+                openFechoModal();
+            } else {
+                focusScan();
+            }
+        }
+    }
+
+    function handleFechoEnter(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            confirmFinishLote();
+        }
+    }
+
+    function openFechoModal() {
+        document.getElementById('inputReferencia').value = "";
+        document.getElementById('inputEtiqueta').value = "";
+        document.getElementById('modalFecho').style.display = 'flex';
+        document.getElementById('inputReferencia').focus();
+    }
+
+    function forceFinish() {
+        if (bufferItens.length === 0) {
+            showPopup("O buffer está vazio!", "error");
+            return;
+        }
+        openFechoModal();
+    }
+
+    async function confirmFinishLote() {
+        const ref = document.getElementById('inputReferencia').value.trim();
+        const etiq = document.getElementById('inputEtiqueta').value.trim();
+        const nome = document.getElementById('nomeColaborador').value.trim();
+        const total = document.getElementById('qtdTotal').value.trim();
+
+        if (!ref || !etiq) {
+            showPopup("Preencha a Referência e o Número da Etiqueta!", "error");
+            return;
+        }
+
+        if(nome && !memory.users.includes(nome)) {
+            memory.users.push(nome);
+            await saveMemoryState();
+            updateDatalists();
+        }
+
+        const now = new Date();
+        const dataFormatada = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        
+        const pacote = {
+            referencia: ref,
+            etiqueta: etiq,
+            itens: [...bufferItens],
+            data: dataFormatada,
+            colab: nome,
+            total: parseInt(total) || bufferItens.length
+        };
+
+        const t = dbInstance.transaction(["historico"], "readwrite");
+        t.objectStore("historico").add(pacote).onsuccess = async () => {
+            fetch(URL_SCRIPT, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pacote) }).catch(() => {});
+            
+            bufferItens = [];
+            await saveBufferState();
+            document.getElementById('modalFecho').style.display = 'none';
+            document.getElementById('qtdTotal').value = '';
+            updateUI();
+            showPopup("Lote guardado e enviado com sucesso!");
+            focusScan();
+        };
+    }
+
+    function toggleAccordion(id) {
+        const el = document.getElementById('content-' + id);
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+
+    async function renderHist() {
+        const fColab = document.getElementById('f-colab').value;
+        const fRef = document.getElementById('f-ref').value;
+        const fSearch = document.getElementById('f-search').value.trim().toUpperCase();
+
+        const dbList = await getAllFromDB("historico");
+        const filtered = dbList.filter(v => {
+            const matchColab = (fColab === "" || v.colab === fColab);
+            const matchRef = (fRef === "" || v.referencia === fRef);
+            const matchSearch = (fSearch === "" || v.etiqueta.toUpperCase().includes(fSearch) || v.itens.some(i => i.dataMatrix.toUpperCase().includes(fSearch)));
+            return matchColab && matchRef && matchSearch;
+        }).reverse();
+
+        const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+        document.getElementById('hist-counter').innerText = `Registos: ${filtered.length}`;
+        document.getElementById('accordion-container').innerHTML = paginated.map(v => {
+            const htmlItens = v.itens.map(i => `<div style="border-bottom:1px solid #eee; padding:3px 0;"><b>DM:</b> ${i.dataMatrix} | <b>Est:</b> ${i.estanquidade}</div>`).join('');
+            return `
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion('lote-${v.id}')">
+                        <span>ETQ: ${v.etiqueta} (Ref: ${v.referencia})</span>
+                        <span style="background:var(--secondary); color:white; padding:2px 8px; border-radius:10px; font-size:11px;">${v.total} Un.</span>
+                    </div>
+                    <div id="content-lote-${v.id}" class="accordion-content">
+                        <p style="margin:0 0 8px 0; color:#555;"><b>Data:</b> ${v.data} | <b>Colab:</b> ${v.colab}</p>
+                        ${htmlItens}
+                    </div>
+                </div>`;
+        }).join('');
+
+        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+        document.getElementById('pagination-container').innerHTML = Array.from({length: totalPages}, (_, i) => 
+            `<button class="btn-page" ${currentPage === i+1 ? 'style="background:var(--secondary); color:white;"' : ''} onclick="currentPage=${i+1}; renderHist()">${i+1}</button>`
+        ).join('');
+    }
+
+    async function updateFilterOptions() {
+        const dbList = await getAllFromDB("historico");
+        const colabs = [...new Set(dbList.map(i => i.colab).filter(Boolean))];
+        const refs = [...new Set(dbList.map(i => i.referencia).filter(Boolean))];
+
+        document.getElementById('f-colab').innerHTML = '<option value="">Todos</option>' + colabs.map(c => `<option value="${c}">${c}</option>`).join('');
+        document.getElementById('f-ref').innerHTML = '<option value="">Todas</option>' + refs.map(r => `<option value="${r}">${r}</option>`).join('');
+    }
+
+    async function exportExcel() {
+        const dbList = await getAllFromDB("historico");
+        if(dbList.length === 0) { showPopup("Não existem dados para exportar!", "error"); return; }
+        
+        let wsData = [["ID Lote", "Data", "Colaborador", "Referencia", "Etiqueta", "Total", "Data Matrix", "Estanquidade"]];
+        dbList.forEach(v => {
+            v.itens.forEach(i => {
+                wsData.push([v.id, v.data, v.colab, v.referencia, v.etiqueta, v.total, i.dataMatrix, i.estanquidade]);
             });
+        });
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Historico");
+        XLSX.writeFile(wb, "historico_picagem.xlsx");
+    }
 
-            if (tipo === 'xlsx') {
-                let wsData = [["ID Lote", "Data", "Colaborador", "Referencia", "Etiqueta", "Total", "Data Matrix", "Estanquidade"]];
-                selecionados.forEach(v => {
-                    v.itens.forEach(i => {
-                        wsData.push([v.id, v.data, v.colab, v.referencia, v.etiqueta, v.total, i.dataMatrix, i.estanquidade]);
-                    });
-                });
-                const ws = XLSX.utils.aoa_to_sheet(wsData);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Historico");
-                XLSX.writeFile(wb, "historico_picagem.xlsx");
-            } else if (tipo === 'pdf') {
-                let htmlJanela = `<html><head><title>Relatório de Picagem</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#333;}h1{color:#2c3e50;}table{width:100%;border-collapse:collapse;margin-top:20px;}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px;}th{background-color:#3498db;color:white;}.bloco{margin-bottom:30px;page-break-inside:avoid;}</style></head><body><h1>Relatório de Picagem Industrial</h1>`;
-                selecionados.forEach(v => {
-                    htmlJanela += `<div class="bloco"><h3>Etiqueta: ${v.etiqueta} (Ref: ${v.referencia})</h3><p><b>Data:</b> ${v.data} | <b>Colaborador:</b> ${v.colab} | <b>Total Unidades:</b> ${v.total}</p><table><tr><th>Data Matrix</th><th>Estanquidade</th></tr>`;
-                    v.itens.forEach(i => {
-                        htmlJanela += `<tr><td>${i.dataMatrix}</td><td>${i.estanquidade}</td></tr>`;
-                    });
-                    htmlJanela += `</table></div>`;
-                });
-                htmlJanela += `</body></html>`;
-                const janela = window.open('', '', 'height=700,width=900');
-                janela.document.write(htmlJanela);
-                janela.document.close();
-                janela.focus();
-                setTimeout(() => { janela.print(); janela.close(); }, 500);
-            }
+    async function clearHistorySecure() {
+        if(confirm("Tem a certeza que deseja limpar o histórico local?") && prompt("Digite APAGAR para confirmar") === "APAGAR") {
+            await clearStore("historico");
+            renderHist();
+            showPopup("Histórico limpo!");
         }
+    }
 
-        function limparIdentificacao() { document.getElementById('nomeColaborador').value = ''; document.getElementById('qtdTotal').value = ''; }
-        function limparHistorico() { 
-            const pin = prompt("Insira o PIN para confirmar a limpeza:");
-            if(pin === "1563") {
-                db.transaction(["lotes"], "readwrite").objectStore("lotes").clear().onsuccess = () => location.reload();
-            } else if(pin !== null) {
-                alert("PIN incorreto!");
-            }
-        }
-    </script>
+    function closeModalEstanquidade() { document.getElementById('modalEstanquidade').style.display = 'none'; focusScan(); }
+    function closeModalFecho() { document.getElementById('modalFecho').style.display = 'none'; focusScan(); }
+    function focusScan() { document.getElementById('inputScan').focus(); }
+    function updateDatalists() {
+        document.getElementById('dl-colab').innerHTML = memory.users.map(u => `<option value="${u}">`).join('');
+    }
+
+    window.onload = async () => {
+        await initIndexedDB();
+        updateDatalists();
+        updateUI();
+        focusScan();
+    };
+</script>
 </body>
 </html>
